@@ -8,8 +8,7 @@
 
 /**
  * main - Write a UNIX command line interpreter.
- * @argc: ...
- * @argv: ...
+ *
  * Return: 0
  */
 
@@ -35,12 +34,10 @@ int main(void)
 			perror("getline");
 			exit(EXIT_FAILURE);
 		}
-
 		if (strcmp(line, "exit\n") == 0)
 		{
 			break;
 		}
-
 
 		args[i] = strtok(line, "\n");
 
@@ -58,19 +55,29 @@ int main(void)
 			perror("fork");
 			exit(EXIT_FAILURE);
 		}
-
 		else if (pid == 0)
 		{
-			execvp(args[0], args);
-			perror("execvp");
-			exit(EXIT_FAILURE);
+			if (execvp(args[0], args) == -1)
+			{
+				perror("execvp");
+				exit(EXIT_FAILURE);
+			}
 		}
-
 		else
 		{
-			waitpid(pid, &status, 0);
+			if (waitpid(pid, &status, 0) == -1)
+			{
+				perror("waitpid");
+				exit(EXIT_FAILURE);
+			}
+
+			if (!WIFEXITED(status))
+			{
+				printf("Child process did not exit normally\n");
+			}
 		}
 	}
+
 	free(line);
 	return (0);
 }
