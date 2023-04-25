@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+#define INITIAL_BUFFER_SIZE 2048
+#define BUFFER_SIZE_INCREMENT 1
 
 /**
  * leonard_getline - entry point
@@ -8,29 +12,52 @@
 
 char *leonard_getline(void)
 {
-	static char buffer[2048];
-	static int;
+	int a, b =  0;
+	size_t size = INITIAL_BUFFER_SIZE;
+	size_t increment = BUFFER_SIZE_INCREMENT;
+	size_t threshold = 1024;
+	char *buffer = malloc(INITIAL_BUFFER_SIZE);
 
-	char c;
-
-	while ((c = getchar()) != EOF && c != '\n')
+	if (!buffer)
 	{
-	buffer[pos++] = c;
-
-	if (pos == sizeof(buffer) - 1)
-	{
-		buffer[pos] = '\n';
-		return (buffer);
-	}
+		fprintf(stderr, "Error: Unable to allocate memory.\n");
+		exit(EXIT_FAILURE);
 	}
 
-	if (c == EOF && pos == 0)
+	while ((a = getchar()) != EOF && a != '\n')
 	{
+		char *new_buffer;
+
+		if (b == (int)size - 1)
+		{
+			size += size < threshold ? size : increment;
+			new_buffer = realloc(buffer, size);
+
+			if (!new_buffer)
+			{
+				fprintf(stderr, "Error: Unable to allocate memory.\n");
+				free(buffer);
+				exit(EXIT_FAILURE);
+			}
+			buffer = new_buffer;
+		}
+
+		if (a == '\0')
+		{
+			fprintf(stderr, "Error: Invalid input.\n");
+			free(buffer);
+			exit(EXIT_FAILURE);
+		}
+
+		buffer[b++] = (char) a;
+	}
+
+	if (a == EOF && b == 0)
+	{
+		free(buffer);
 		return (NULL);
 	}
-
-	buffer[pos] = '\0';
-	pos = 0;
+	buffer[b] = '\0';
 	return (buffer);
 }
 
@@ -46,7 +73,8 @@ int main(void)
 
 	while ((line = leonard_getline()) != NULL)
 	{
-		printf("You entered: %s\n", line);
+		printf("%s", line);
+		free(line);
 	}
 
 	return (0);
