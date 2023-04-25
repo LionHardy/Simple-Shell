@@ -3,34 +3,55 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <errno.h>
 
 #define BUFFER_SIZE 1024
 
 /**
  * main - Write a UNIX command line interpreter.
- *
+ * @argc: ...
+ * @argv: ...
  * Return: 0
  */
 
 int main(void)
 {
-	char buffer[BUFFER_SIZE];
-	int status;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t ch;
+	char *args[BUFFER_SIZE];
 	pid_t pid;
-	pid = fork();
+	int status;
+
 
 	while (1)
 	{
-		printf("$ ");
+		int i = 0;
 
-		if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
+		printf("$ ");
+		ch = getline(&line, &len, stdin);
+
+		if (ch == -1)
+		{
+			perror("getline");
+			exit(EXIT_FAILURE);
+		}
+
+		if (strcmp(line, "exit\n") == 0)
 		{
 			break;
 		}
 
-		buffer[strcspn(buffer, "\n")] = 0;
 
+		args[i] = strtok(line, "\n");
+
+		while (args[i] != NULL)
+		{
+			i++;
+			args[i] = strtok(NULL, "\n");
+		}
+		args[i] = NULL;
+
+		pid = fork();
 
 		if (pid == -1)
 		{
@@ -40,27 +61,16 @@ int main(void)
 
 		else if (pid == 0)
 		{
-			if (execlp(buffer, buffer, NULL) == -1)
-			{
-				printf("%s: command not found\n", buffer);
-				exit(EXIT_FAILURE);
-			}
+			execvp(args[0], args);
+			perror("execvp");
+			exit(EXIT_FAILURE);
 		}
 
 		else
 		{
-			if (wait(&status) == -1)
-			{
-				perror("wait");
-				exit(EXIT_FAILURE);
-			}
+			waitpid(pid, &status, 0);
 		}
 	}
-
-	if (errno == EINTR)
-	{
-		printf("\n");
-	}
-
+	free(line);
 	return (0);
 }
