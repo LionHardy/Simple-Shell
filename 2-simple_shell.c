@@ -16,21 +16,23 @@
 int main(void)
 {
 	char line[MAX_LINE];
-	char *args[MAX_ARGS];
 	int should_run = 1;
+
+	char *token = NULL;
+
+	char *args[MAX_ARGS] = {NULL};
+
+	int i = 0;
 
 	while (should_run)
 	{
 		printf("shell> ");
 		fflush(stdout);
 
-		char *token;
-	       
-		char *args[MAX_ARGS];
 		int i = 0;
 
 		fgets(line, MAX_LINE, stdin);
-		line[strlen(line) - 1] = '\0';
+		*(line + strlen(line) - 1) = '\0';
 		token = strtok(line, " ");
 
 		while (token != NULL && i < MAX_ARGS - 1)
