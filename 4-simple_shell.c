@@ -4,13 +4,14 @@
 
 #define MAX_INPUT 1024
 
-int exit_builtin(void);
 
 /**
  * main - Implement the exit built-in, that exits the shell
  *
  * Return: Always 0
  */
+
+int exit_builtin(void);
 
 int main(void)
 {
@@ -22,12 +23,20 @@ int main(void)
 		printf("$ ");
 		fgets(input, MAX_INPUT, stdin);
 
+		if (sscanf(input, "%[^\n]%*c", input) != 1)
+		{
+			fprintf(stderr, "Error reading input\n");
+			continue;
+		}
+
 		if (strcmp(input, "exit\n") == 0)
 		{
-			status = exit_builtin();
+			exit_builtin();
+			status = 0;
 		}
 		else
 		{
+			printf("Unrecognised command: %s", input);
 		}
 	}
 
